@@ -52,21 +52,11 @@ public class ProfileFragment extends Fragment {
                 String username = etUsername.getText().toString();
                 if (username.trim().length() > 0) {
                     final User newUser = new User(user.getEmail(), username);
+
                     // Add user to the database
                     database = FirebaseDatabase.getInstance();
                     myRef = database.getReference("users");
-                    myRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            myRef.child(userID).setValue(newUser);
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError error) {
-                            // Failed to read value
-                            Log.w(TAG, "Failed to read value.", error.toException());
-                        }
-                    });
+                    myRef.child(userID).setValue(newUser);
                 }
                 else {
                     makeToast("Must enter a username");

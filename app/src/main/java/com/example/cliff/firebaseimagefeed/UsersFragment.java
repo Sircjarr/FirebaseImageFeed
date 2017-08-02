@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.cliff.firebaseimagefeed.Model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -56,6 +57,7 @@ public class UsersFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
+                generateList(dataSnapshot);
                 // Log.d(TAG, "Value is: " + userID);
                 // Log.d(TAG, "Email is: " + user.getEmail());
             }
@@ -70,13 +72,19 @@ public class UsersFragment extends Fragment {
         return view;
     }
 
-    public void generateList() {
+    public void generateList(DataSnapshot dataSnapshot) {
         List<String> list = new ArrayList<String>();
+
+        // Gets the snapshot of all userId data, which are the children of 'users' reference
+        for(DataSnapshot ds : dataSnapshot.getChildren()){
+            // Where username is a child of the userId ds
+            String username = ds.child("username").getValue(String.class);
+            list.add(username);
+        }
+
         ArrayAdapter<String> arrayAdapter =
                 new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, list);
         listView.setAdapter(arrayAdapter);
-
-        // Get data from database
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
