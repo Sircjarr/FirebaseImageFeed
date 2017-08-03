@@ -31,8 +31,6 @@ public class UsersFragment extends Fragment {
     private ListView listView;
 
     // Database variables
-    private FirebaseAuth mAuth;
-    String userID;
     private FirebaseDatabase database;
     private DatabaseReference myRef;
 
@@ -43,23 +41,17 @@ public class UsersFragment extends Fragment {
 
         listView = (ListView) view.findViewById(R.id.listView);
 
-        mAuth = FirebaseAuth.getInstance();
-        final FirebaseUser user = mAuth.getCurrentUser();
-        userID = user.getUid();
-
         // Get the instance of the database
         database = FirebaseDatabase.getInstance();
         // Reference object to access the database
         myRef = database.getReference("users");
 
         myRef.addValueEventListener(new ValueEventListener() {
+            // This method is called once with the initial value and again
+            // whenever data at this location is updated.
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
                 generateList(dataSnapshot);
-                // Log.d(TAG, "Value is: " + userID);
-                // Log.d(TAG, "Email is: " + user.getEmail());
             }
 
             @Override

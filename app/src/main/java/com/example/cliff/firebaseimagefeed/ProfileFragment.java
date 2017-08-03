@@ -24,12 +24,11 @@ public class ProfileFragment extends Fragment {
 
     private static final String TAG = "ProfileFragment";
 
-    EditText etUsername;
-    Button btnCreateUser;
+    private EditText etUsername;
+    private Button btnCreateUser;
 
-    private FirebaseAuth mAuth;
-    FirebaseUser user;
-    String userID;
+    private FirebaseUser user;
+    private String userID;
 
     private FirebaseDatabase database;
     private DatabaseReference myRef;
@@ -42,9 +41,7 @@ public class ProfileFragment extends Fragment {
         etUsername = (EditText) view.findViewById(R.id.etUsername);
         btnCreateUser = (Button) view.findViewById(R.id.btnCreateUser);
 
-        mAuth = FirebaseAuth.getInstance();
-        user = mAuth.getCurrentUser();
-        userID = user.getUid();
+        userID = ((NavigationActivity)getActivity()).mAuth.getCurrentUser().getUid();
 
         btnCreateUser.setOnClickListener(new View.OnClickListener() {
             @Override
