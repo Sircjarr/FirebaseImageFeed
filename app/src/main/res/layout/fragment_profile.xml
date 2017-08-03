@@ -15,12 +15,21 @@
         android:maxLines="1" />
 
     <Button
-        android:id="@+id/btnCreateUser"
-        style="?android:textAppearanceSmall"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/update_profile"
-        android:textStyle="bold" />
+    android:id="@+id/btnCreateUser"
+    style="?android:textAppearanceSmall"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:text="@string/update_profile"
+    android:textStyle="bold" />
+
+    <Button
+    android:id="@+id/btnUploadImage"
+    style="?android:textAppearanceSmall"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:text="@string/upload_image"
+    android:textStyle="bold" />
 
 </LinearLayout>

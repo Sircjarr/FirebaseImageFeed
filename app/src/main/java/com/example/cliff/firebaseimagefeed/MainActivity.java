@@ -16,8 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    EditText etEmail;
-    EditText etPassword;
+    EditText etEmail, etPassword;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -31,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         etPassword = (EditText)findViewById(R.id.password);
 
         mAuth = FirebaseAuth.getInstance();
-
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {

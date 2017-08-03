@@ -1,5 +1,6 @@
 package com.example.cliff.firebaseimagefeed;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,6 +27,7 @@ public class ProfileFragment extends Fragment {
 
     private EditText etUsername;
     private Button btnCreateUser;
+    private Button btnUploadImage;
 
     private FirebaseUser user;
     private String userID;
@@ -40,6 +42,7 @@ public class ProfileFragment extends Fragment {
 
         etUsername = (EditText) view.findViewById(R.id.etUsername);
         btnCreateUser = (Button) view.findViewById(R.id.btnCreateUser);
+        btnUploadImage = (Button) view.findViewById(R.id.btnUploadImage);
 
         userID = ((NavigationActivity)getActivity()).mAuth.getCurrentUser().getUid();
 
@@ -58,6 +61,13 @@ public class ProfileFragment extends Fragment {
                 else {
                     makeToast("Must enter a username");
                 }
+            }
+        });
+
+        btnUploadImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), UploadActivity.class));
             }
         });
 
