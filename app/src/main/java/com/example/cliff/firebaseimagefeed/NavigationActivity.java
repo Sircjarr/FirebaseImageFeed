@@ -42,12 +42,12 @@ public class NavigationActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    makeToast("Signed in");
+                    makeToast("Signed in 2");
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                     startActivity(new Intent(NavigationActivity.this, MainActivity.class));
-                    makeToast("Signed out");
+                    makeToast("Signed out 2");
                 }
                 // ...
             }

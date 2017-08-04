@@ -11,7 +11,8 @@
     <string name="title_notifications">Notifications</string>
     <string name="username">Username</string>
     <string name="update_profile">Update profile</string>
-    <string name="Logout">Logout</string>
+    <string name="logout">Logout</string>
     <string name="upload_image">Upload image</string>
     <string name="title_activity_upload">UploadActivity</string>
+    <string name="sign_up">or, Sign up</string>
 </resources>

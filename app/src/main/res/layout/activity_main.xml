@@ -1,65 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    >
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.example.cliff.firebaseimagefeed.MainActivity">
 
-    <LinearLayout
-        android:id="@+id/email_login_form"
+    <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:id="@+id/etUsername"
+        android:inputType="text"
+        android:textSize="25sp"
+        android:layout_marginTop="32dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:hint="@string/username"
+        android:visibility="invisible"/>
 
-        <EditText
-            android:id="@+id/email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/enter_email"
-            android:inputType="textEmailAddress"
-            android:maxLines="1" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/etEmail"
+        android:inputType="textEmailAddress"
+        android:textSize="25sp"
+        android:layout_below="@+id/etUsername"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="12dp"
+        android:hint="@string/enter_email"/>
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/etPassword"
+        android:inputType="textPassword"
+        android:textSize="25sp"
+        android:layout_below="@+id/etEmail"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="12dp"
+        android:hint="@string/password" />
 
-        <EditText
-            android:id="@+id/password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/password"
-            android:imeActionId="@+id/login"
-            android:imeOptions="actionUnspecified"
-            android:inputType="textPassword"
-            android:maxLines="1" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnSignInOrSignUp"
+        android:layout_below="@+id/etPassword"
+        android:layout_centerHorizontal="true"
+        android:text="@string/sign_in"
+        android:textSize="20sp"
+        android:onClick="btnSignInOrSignUp" />
 
-        <Button
-            android:id="@+id/email_sign_in_button"
-            style="?android:textAppearanceSmall"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:onClick="btnSignIn"
-            android:text="@string/sign_in"
-            android:textStyle="bold" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvSignUpOrSignIn"
+        android:layout_alignBaseline="@+id/btnSignInOrSignUp"
+        android:layout_alignBottom="@+id/btnSignInOrSignUp"
+        android:layout_toRightOf="@+id/btnSignInOrSignUp"
+        android:layout_toEndOf="@+id/btnSignInOrSignUp"
+        android:text="@string/sign_up"
+        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
+        android:textSize="20sp"
+        android:textColor="@android:color/holo_blue_dark" />
 
-        <Button
-            android:id="@+id/email_sign_out_button"
-            style="?android:textAppearanceSmall"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:onClick="btnSignOut"
-            android:text="@string/sign_out"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/view_items_screen"
-            style="?android:textAppearanceSmall"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/view_image_feeds"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-</LinearLayout>
+</RelativeLayout>
