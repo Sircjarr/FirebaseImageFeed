@@ -2,14 +2,26 @@ package com.example.cliff.firebaseimagefeed.Model;
 
 public class User {
 
+    private String userID;
     private String username;
     private String email;
     private String profileURL;
 
-    public User(String email, String username) {
+    public User(){}
+
+    public User(String userID, String email, String username) {
+        this.userID = userID;
         this.email = email;
         this.username = username;
         this.profileURL = "none";
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
     public String getUsername() {

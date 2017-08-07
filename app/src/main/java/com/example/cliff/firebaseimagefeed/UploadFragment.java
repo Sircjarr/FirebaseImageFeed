@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.example.cliff.firebaseimagefeed.Model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -41,7 +42,7 @@ import java.util.List;
 
 public class UploadFragment extends Fragment {
 
-    private static final String TAG = "UploadActivity";
+    private static final String TAG = "UploadFragment";
 
     private ProgressDialog mProgressDialog;
 
@@ -52,13 +53,13 @@ public class UploadFragment extends Fragment {
 
     byte[] byteArray;
 
-    private String userID;
-
     public static final int GET_FROM_GALLERY = 3;
-    private StorageReference mStorageRef;
 
+    private StorageReference storageRef;
     private FirebaseDatabase database;
-    private DatabaseReference databaseReference;
+
+    private String userID;
+    private String username;
 
     @Nullable
     @Override
@@ -69,6 +70,9 @@ public class UploadFragment extends Fragment {
         ivImage = (ImageView) view.findViewById(R.id.ivImage);
         btnPost = (Button) view.findViewById(R.id.btnPost);
         btnUpdateProfilePicture = (Button) view.findViewById(R.id.btnUpdateProfilePicture);
+
+        userID = NavigationActivity.currentUserInfo.getUserID();
+        username = NavigationActivity.currentUserInfo.getUsername();
 
         mProgressDialog = new ProgressDialog(getActivity());
 
@@ -89,12 +93,11 @@ public class UploadFragment extends Fragment {
                     mProgressDialog.setMessage("Uploading image...");
                     mProgressDialog.show();
 
-                    userID = ((NavigationActivity)getActivity()).user.getUid();
                     Log.d(TAG, "onClick: userID " + userID);
 
-                    mStorageRef = FirebaseStorage.getInstance().getReference();
+                    storageRef = FirebaseStorage.getInstance().getReference();
                     long name = System.currentTimeMillis();
-                    StorageReference storageReference = mStorageRef.child("images/users/" + userID + "/" + name + ".jpg");
+                    StorageReference storageReference = storageRef.child("images/users/" + userID + "/" + name + ".jpg");
                     storageReference.putBytes(byteArray).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -112,8 +115,46 @@ public class UploadFragment extends Fragment {
                         }
                     });
                 }
+                else {
+                    makeToast("Upload an image");
+                }
             }
         });
+
+        btnUpdateProfilePicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               if (ivImage.getDrawable() != null) {
+
+                    mProgressDialog.setMessage("Uploading image...");
+                    mProgressDialog.show();
+
+                    // Save in storage
+                    storageRef = FirebaseStorage.getInstance().getReference();
+                    StorageReference storageReference = storageRef.child("profile_images/users/" + userID + "/profile.jpg");
+                    storageReference.putBytes(byteArray).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // Get a URL to the uploaded content
+                            @SuppressWarnings("VisibleForTests") Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                            writeProfileURLReferenceToDatabase(downloadUrl.toString());
+                            makeToast("Upload Success");
+                            mProgressDialog.dismiss();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            makeToast("Upload Failed");
+                            mProgressDialog.dismiss();
+                        }
+                    });
+               }
+               else {
+                   makeToast("Upload an image");
+               }
+            }
+        });
+
         return view;
     }
 
@@ -158,23 +199,42 @@ public class UploadFragment extends Fragment {
     public void writeURLReferenceToDatabase(String url) {
         database = FirebaseDatabase.getInstance();
 
-        // get the current user's username
         final String resultURL = url;
-        final DatabaseReference usernameReference = database.getReference();
-        usernameReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        final DatabaseReference databaseReference = database.getReference("user_images");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                String username = dataSnapshot.child("users").child(userID).child("username").getValue(String.class);
-
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
-                List<String> userImages = dataSnapshot.child("user_images").child(username).getValue(t);
+                List<String> userImages = dataSnapshot.child(username).getValue(t);
 
                 if (userImages == null) {
                     userImages = new ArrayList<String>();
                 }
                 userImages.add(resultURL);
-                usernameReference.child("user_images").child(username).setValue(userImages);
+                databaseReference.child(username).setValue(userImages);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    public void writeProfileURLReferenceToDatabase(String url) {
+        database = FirebaseDatabase.getInstance();
+
+        final String resultURL = url;
+        final DatabaseReference databaseReference = database.getReference("users");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot ds) {
+                // Get the current User's class and update the profileURL field
+                User user = ds.child(userID).getValue(User.class);
+                user.setProfileURL(resultURL);
+                databaseReference.child(userID).setValue(user);
             }
 
             @Override

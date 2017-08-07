@@ -47,17 +47,16 @@ public class CurrentUserFragment extends Fragment {
         lvUserImages = (ListView) view.findViewById(R.id.lvUserImages);
         tvNoImages = (TextView) view.findViewById(R.id.tvNoImages);
 
-        final String userID = ((NavigationActivity)getActivity()).user.getUid();
-
+        // Read all the current user's images and display them in a list.
         cufDatabase = FirebaseDatabase.getInstance();
-        cufDatabaseReference = cufDatabase.getReference();
+        cufDatabaseReference = cufDatabase.getReference("user_images");
         cufDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot ds) {
-                final String username = ds.child("users").child(userID).child("username").getValue(String.class);
+                final String username = NavigationActivity.currentUserInfo.getUsername();
 
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
-                final List<String> userImagesURL = ds.child("user_images").child(username).getValue(t);
+                final List<String> userImagesURL = ds.child(username).getValue(t);
 
                 if (userImagesURL == null) {
                     tvNoImages.setVisibility(View.VISIBLE);
@@ -118,13 +117,8 @@ public class CurrentUserFragment extends Fragment {
     public void deleteFromDatabase(String username, int position) {
         final String resultUsername = username;
         final int resultPosition = position;
-        // Read in arrayList
-        // Remove position from AL
-        // put AL back in
         cufDatabase = FirebaseDatabase.getInstance();
         cufDatabaseReference = cufDatabase.getReference();
-
-        // get the current user's username
         cufDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
