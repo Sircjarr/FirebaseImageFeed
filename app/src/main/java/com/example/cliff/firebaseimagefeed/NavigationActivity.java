@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.cliff.firebaseimagefeed.Model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -22,23 +23,29 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.lang.ref.ReferenceQueue;
+import java.util.ArrayList;
+
 public class NavigationActivity extends AppCompatActivity {
 
     private static final String TAG = "NavigationActivity";
 
-    public FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
+    public FirebaseAuth auth;
+    private FirebaseAuth.AuthStateListener authListener;
+    public FirebaseUser user;
+    public FirebaseDatabase database;
+    public DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
-        mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
+        auth = FirebaseAuth.getInstance();
+        authListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
+                user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
@@ -49,7 +56,6 @@ public class NavigationActivity extends AppCompatActivity {
                     startActivity(new Intent(NavigationActivity.this, MainActivity.class));
                     makeToast("Signed out 2");
                 }
-                // ...
             }
         };
 
@@ -66,6 +72,26 @@ public class NavigationActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
         myToolbar.setTitle(null);
+
+        /*----------------- Testing --------------
+        // Observe the structure of these objects in the database
+        // Test 1: ArrayList<CustomObject>
+        FirebaseDatabase testDatabase = FirebaseDatabase.getInstance();
+        ArrayList<User> testArrayList = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            testArrayList.add(new User("boga", "noga"));
+        }
+        DatabaseReference testDatabaseReference = testDatabase.getReference("test");
+        testDatabaseReference.setValue(testArrayList);
+
+        // Test 2: ArrayList<String>
+        ArrayList<String> testTwoArrayList = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            testTwoArrayList.add("boga");
+        }
+        DatabaseReference testTwoDatabaseReference = testDatabase.getReference("testTwo");
+        testTwoDatabaseReference.setValue(testTwoArrayList);
+        // ----------------------------------------*/
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -79,7 +105,7 @@ public class NavigationActivity extends AppCompatActivity {
                     fragment = new UsersFragment();
                     break;
                 case R.id.navigation_dashboard:
-                    fragment = new ProfileFragment();
+                    fragment = new UploadFragment();
                     break;
                 case R.id.navigation_notifications:
                     break;
@@ -99,14 +125,14 @@ public class NavigationActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
+        auth.addAuthStateListener(authListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
+        if (authListener != null) {
+            auth.removeAuthStateListener(authListener);
         }
     }
 
@@ -123,7 +149,7 @@ public class NavigationActivity extends AppCompatActivity {
         switch (id) {
 
             case R.id.logout:
-                mAuth.signOut();
+                auth.signOut();
                 startActivity(new Intent(this, MainActivity.class));
                 break;
 

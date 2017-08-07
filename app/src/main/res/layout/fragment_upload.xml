@@ -8,7 +8,7 @@
         android:id="@+id/btnUploadFromGallery"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload from Gallery"
+        android:text="@string/upload_from_gallery"
         />
 
     <ImageView
@@ -22,7 +22,13 @@
         android:id="@+id/btnPost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Post"
+        android:text="@string/post"
         />
+
+    <Button
+        android:id="@+id/btnUpdateProfilePicture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/update_profile_picture"/>
 
 </LinearLayout>

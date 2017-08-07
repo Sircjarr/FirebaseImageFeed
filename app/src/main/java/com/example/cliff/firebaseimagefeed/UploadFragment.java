@@ -4,15 +4,16 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -22,12 +23,11 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -36,8 +36,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class UploadActivity extends AppCompatActivity {
+public class UploadFragment extends Fragment {
 
     private static final String TAG = "UploadActivity";
 
@@ -46,56 +48,36 @@ public class UploadActivity extends AppCompatActivity {
     Button btnUploadFromGallery;
     ImageView ivImage;
     Button btnPost;
+    Button btnUpdateProfilePicture;
 
     byte[] byteArray;
 
-    static String username;
-
-    private FirebaseAuth auth;
-    private FirebaseAuth.AuthStateListener authListener;
-    private FirebaseUser user;
+    private String userID;
 
     public static final int GET_FROM_GALLERY = 3;
     private StorageReference mStorageRef;
 
     private FirebaseDatabase database;
-    private DatabaseReference myRef;
+    private DatabaseReference databaseReference;
+    private String testString = "hopefully this isnt null";
 
+    @Nullable
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_upload);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_upload, container, false);
 
-        btnUploadFromGallery = (Button) findViewById(R.id.btnUploadFromGallery);
-        ivImage = (ImageView) findViewById(R.id.ivImage);
-        btnPost = (Button) findViewById(R.id.btnPost);
+        btnUploadFromGallery = (Button) view.findViewById(R.id.btnUploadFromGallery);
+        ivImage = (ImageView) view.findViewById(R.id.ivImage);
+        btnPost = (Button) view.findViewById(R.id.btnPost);
+        btnUpdateProfilePicture = (Button) view.findViewById(R.id.btnUpdateProfilePicture);
 
-        mProgressDialog = new ProgressDialog(UploadActivity.this);
-
-        auth = FirebaseAuth.getInstance();
-        authListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    makeToast("Signed in 3");
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                    startActivity(new Intent(UploadActivity.this, MainActivity.class));
-                    makeToast("Signed out 3");
-                }
-                // ...
-            }
-        };
+        mProgressDialog = new ProgressDialog(getActivity());
 
         btnUploadFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivityForResult(new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI),
+                                android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI),
                         GET_FROM_GALLERY);
             }
         });
@@ -105,11 +87,11 @@ public class UploadActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (ivImage.getDrawable() != null) {
 
-                    mProgressDialog.setMessage("Uploading Image...");
+                    mProgressDialog.setMessage("Uploading image...");
                     mProgressDialog.show();
 
-                    user = auth.getCurrentUser();
-                    String userID = user.getUid();
+                    userID = ((NavigationActivity)getActivity()).user.getUid();
+                    Log.d(TAG, "onClick: userID " + userID);
 
                     mStorageRef = FirebaseStorage.getInstance().getReference();
                     long name = System.currentTimeMillis();
@@ -133,10 +115,11 @@ public class UploadActivity extends AppCompatActivity {
                 }
             }
         });
+        return view;
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         //Detects request codes
@@ -144,7 +127,7 @@ public class UploadActivity extends AppCompatActivity {
             Uri selectedImage = data.getData();
             Bitmap bitmap = null;
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImage);
                 mProgressDialog.setMessage("Getting image...");
                 mProgressDialog.show();
                 Glide.with(this)
@@ -175,53 +158,35 @@ public class UploadActivity extends AppCompatActivity {
 
     public void storeURLReference(String url) {
         database = FirebaseDatabase.getInstance();
+
+        // get the current user's username
         final String resultURL = url;
+        final DatabaseReference usernameReference = database.getReference();
+        usernameReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
-        // Retrieve the username of the current user
-        DatabaseReference userNameRef = database.getReference("users/" + user.getUid());
-        userNameRef.addValueEventListener(new ValueEventListener() {
-              @Override
-              public void onDataChange(DataSnapshot dataSnapshot) {
-                  username = dataSnapshot.child("username").getValue(String.class);
-                  myRef = database.getReference("user_images");
-                  Log.d(TAG, "onDataChange: " + resultURL);
-                  myRef.child(username).child(resultURL).setValue(resultURL);
-              }
+                String username = dataSnapshot.child("users").child(userID).child("username").getValue(String.class);
 
-              // a different way to get the users name?
-              @Override
-              public void onCancelled(DatabaseError databaseError) {
-                  Log.d(TAG, "onCancelled: " + databaseError.getMessage());
-              }
-          });
+                GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
+                List<String> userImages = dataSnapshot.child("user_images").child(username).getValue(t);
 
-        /*
-        while(username == null) {
-            Log.d(TAG, "run: " + username);
-        }
-        Log.d(TAG, "storeURLReference: " + username);
+                if (userImages == null) {
+                    userImages = new ArrayList<String>();
+                }
+                userImages.add(resultURL);
+                usernameReference.child("user_images").child(username).setValue(userImages);
+            }
 
-        // Store a pointer to the image
-        myRef = database.getReference("user_images");
-        myRef.child(username).child(url).setValue(url);
-        */
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        auth.addAuthStateListener(authListener);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (authListener != null) {
-            auth.removeAuthStateListener(authListener);
-        }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
     }
 
     private void makeToast(String message){
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 }

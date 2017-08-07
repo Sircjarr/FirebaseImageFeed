@@ -2,11 +2,21 @@ package com.example.cliff.firebaseimagefeed.Model;
 
 public class User {
 
-    private String email;
     private String username;
+    private String email;
+    private String profileURL;
 
     public User(String email, String username) {
         this.email = email;
+        this.username = username;
+        this.profileURL = "none";
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
         this.username = username;
     }
 
@@ -18,11 +28,11 @@ public class User {
         this.email = email;
     }
 
-    public String getUsername() {
-        return username;
+    public String getProfileURL() {
+        return profileURL;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setProfileURL(String profileURL) {
+        this.profileURL = profileURL;
     }
 }

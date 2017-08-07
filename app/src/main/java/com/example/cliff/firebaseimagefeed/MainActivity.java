@@ -11,8 +11,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.cliff.firebaseimagefeed.Model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,8 +31,14 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    public FirebaseDatabase mDatabase;
+    public DatabaseReference mDatabaseReference;
+
+    public String username;
+    public String email;
 
     private boolean signInMode = true;
+    private boolean newUser = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +55,24 @@ public class MainActivity extends AppCompatActivity {
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+                FirebaseUser mUser = firebaseAuth.getCurrentUser();
+                if (mUser != null) {
                     // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    if (!newUser) {
+                        Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
+                        intent.putExtra("username", username);
+                        startActivity(intent);
+                    }
+                    else {
+                        addUserToDatabase();
+                        Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
+                        intent.putExtra("username", username);
+                        startActivity(intent);
+                    }
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
                     makeToast("Signed in");
+                    // This method will finish the current activity, making sure it will not stack.
+                    finish();
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -60,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (signInMode) {
+                    newUser = false;
                     signInMode = false;
                     btnSignInOrSignUp.setText("Sign up");
                     tvSignInOrSignUp.setText("or, Sign in");
@@ -90,16 +117,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btnSignInOrSignUp(View view) {
-        String email = etEmail.getText().toString();
-        String password = etPassword.getText().toString();
-        if (email.trim().length() > 0 && password.trim().length() > 0) {
-            mAuth.signInWithEmailAndPassword(email, password);
-            Intent intent = new Intent(this, NavigationActivity.class);
-            startActivity(intent);
+        if (signInMode) {
+            email = etEmail.getText().toString();
+            String password = etPassword.getText().toString();
+
+            if (email.trim().length() > 0 && password.trim().length() > 0) {
+                mAuth.signInWithEmailAndPassword(email, password);
+            }
+            else {
+                makeToast("E-mail or password cannot be blank");
+            }
         }
         else {
-            makeToast("E-mail or password cannot be blank");
+            username = etUsername.getText().toString();
+            email = etEmail.getText().toString();
+            String password = etPassword.getText().toString();
+
+            if (email.trim().length() > 0 && password.trim().length() > 0 && username.trim().length() > 0) {
+                newUser = true;
+                mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            makeToast("Auth failed");
+                        }
+                    }
+                    });
+
+            }
+            else {
+                makeToast("Fields must not be blank");
+            }
         }
+    }
+
+    public void addUserToDatabase() {
+        User user = new User(email, username);
+        mDatabase = FirebaseDatabase.getInstance();
+        mDatabaseReference = mDatabase.getReference("users");
+        FirebaseUser fbUser = mAuth.getCurrentUser();
+        String userID = fbUser.getUid();
+
+        mDatabaseReference.child(userID).setValue(user);
     }
 
     private void makeToast(String message){
