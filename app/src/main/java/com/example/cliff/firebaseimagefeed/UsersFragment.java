@@ -1,5 +1,6 @@
 package com.example.cliff.firebaseimagefeed;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -65,7 +66,7 @@ public class UsersFragment extends Fragment {
     }
 
     public void generateList(DataSnapshot dataSnapshot) {
-        List<String> list = new ArrayList<String>();
+        final List<String> list = new ArrayList<String>();
 
         // Gets the snapshot of all userId data, which are the children of 'users' reference
         for(DataSnapshot ds : dataSnapshot.getChildren()){
@@ -81,7 +82,9 @@ public class UsersFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ;
+                Intent intent = new Intent(getActivity(), UserActivity.class);
+                intent.putExtra("username", list.get(position));
+                startActivity(intent);
             }
         });
     }
