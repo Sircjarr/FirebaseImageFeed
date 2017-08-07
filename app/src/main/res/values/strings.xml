@@ -18,4 +18,7 @@
     <string name="upload_from_gallery">Upload from Gallery</string>
     <string name="post">Post</string>
     <string name="no_user_images">This user has no images</string>
+    <string name="users">Users</string>
+    <string name="upload">Upload</string>
+    <string name="currentuser">CurrentUser</string>
 </resources>

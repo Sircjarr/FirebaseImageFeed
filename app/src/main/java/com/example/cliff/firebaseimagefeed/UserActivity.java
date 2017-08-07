@@ -9,6 +9,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.cliff.firebaseimagefeed.Model.UserImage;
+import com.example.cliff.firebaseimagefeed.Util.UserListAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,7 +52,7 @@ public class UserActivity extends AppCompatActivity{
                     tvNoImages.setVisibility(View.VISIBLE);
                 }
                 else {
-                    List<UserImage> userImages = new ArrayList<UserImage>();
+                    List<UserImage> userImages = new ArrayList<>();
                     for (int i = 0; i < userImagesURL.size(); i++) {
                         userImages.add(new UserImage(userImagesURL.get(i)));
                     }
@@ -64,6 +65,5 @@ public class UserActivity extends AppCompatActivity{
             public void onCancelled(DatabaseError error) {
             }
         });
-        // Display user images to ListView
     }
 }

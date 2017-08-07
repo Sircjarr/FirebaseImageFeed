@@ -59,7 +59,6 @@ public class UploadFragment extends Fragment {
 
     private FirebaseDatabase database;
     private DatabaseReference databaseReference;
-    private String testString = "hopefully this isnt null";
 
     @Nullable
     @Override
@@ -101,7 +100,7 @@ public class UploadFragment extends Fragment {
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             // Get a URL to the uploaded content
                             @SuppressWarnings("VisibleForTests") Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                            storeURLReference(downloadUrl.toString());
+                            writeURLReferenceToDatabase(downloadUrl.toString());
                             makeToast("Upload Success");
                             mProgressDialog.dismiss();
                         }
@@ -156,7 +155,7 @@ public class UploadFragment extends Fragment {
         return byteArray;
     }
 
-    public void storeURLReference(String url) {
+    public void writeURLReferenceToDatabase(String url) {
         database = FirebaseDatabase.getInstance();
 
         // get the current user's username

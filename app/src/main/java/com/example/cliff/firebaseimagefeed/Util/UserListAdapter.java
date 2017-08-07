@@ -1,4 +1,4 @@
-package com.example.cliff.firebaseimagefeed;
+package com.example.cliff.firebaseimagefeed.Util;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -14,10 +14,11 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.cliff.firebaseimagefeed.Model.UserImage;
+import com.example.cliff.firebaseimagefeed.R;
 
 import java.util.List;
 
-class UserListAdapter extends ArrayAdapter<UserImage> {
+public class UserListAdapter extends ArrayAdapter<UserImage> {
 
     private static final String TAG = "CustomListAdapter";
 

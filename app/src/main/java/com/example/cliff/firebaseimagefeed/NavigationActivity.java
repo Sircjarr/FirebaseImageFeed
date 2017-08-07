@@ -11,20 +11,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.cliff.firebaseimagefeed.Model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import java.lang.ref.ReferenceQueue;
-import java.util.ArrayList;
 
 public class NavigationActivity extends AppCompatActivity {
 
@@ -33,13 +23,13 @@ public class NavigationActivity extends AppCompatActivity {
     public FirebaseAuth auth;
     private FirebaseAuth.AuthStateListener authListener;
     public FirebaseUser user;
-    public FirebaseDatabase database;
-    public DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
+
+        setTitle("Users");
 
         auth = FirebaseAuth.getInstance();
         authListener = new FirebaseAuth.AuthStateListener() {
@@ -101,13 +91,17 @@ public class NavigationActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             Fragment fragment = null;
             switch (item.getItemId()) {
-                case R.id.navigation_home:
+                case R.id.users:
                     fragment = new UsersFragment();
+                    setTitle("Users");
                     break;
-                case R.id.navigation_dashboard:
+                case R.id.upload:
                     fragment = new UploadFragment();
+                    setTitle("Upload");
                     break;
-                case R.id.navigation_notifications:
+                case R.id.current_user:
+                    fragment = new CurrentUserFragment();
+                    setTitle("Current user");
                     break;
             }
 
