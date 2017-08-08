@@ -23,6 +23,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+// This class shows a list of all users with their profile pictures
+// Clicking on them will take you to that user's uploaded images
+
 public class UsersFragment extends Fragment {
 
     private static final String TAG = "UsersFragment";
@@ -30,7 +33,6 @@ public class UsersFragment extends Fragment {
     private ListView listView;
     private ProgressBar progressBar;
 
-    // Database variables
     private FirebaseDatabase database;
     private DatabaseReference myRef;
 
@@ -42,16 +44,20 @@ public class UsersFragment extends Fragment {
         listView = (ListView) view.findViewById(R.id.listView);
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
 
-        // Get the instance of the database
+        createListFromAllUserData();
+
+        return view;
+    }
+
+    public void createListFromAllUserData() {
+
         database = FirebaseDatabase.getInstance();
-        // Reference object to access the database
         myRef = database.getReference("users");
 
         myRef.addValueEventListener(new ValueEventListener() {
-            // This method is called once with the initial value and again
-            // whenever data at this location is updated.
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                // Ensure that the listener code does not run if there is no Activity
                 if (getActivity() != null) {
                     generateList(dataSnapshot);
                     progressBar.setVisibility(View.GONE);
@@ -64,11 +70,10 @@ public class UsersFragment extends Fragment {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-
-        return view;
     }
 
     public void generateList(DataSnapshot dataSnapshot) {
+
         final List<UserPreview> list = new ArrayList<>();
 
         // Gets the snapshot of all userId data, which are the children of 'users' reference
@@ -76,9 +81,11 @@ public class UsersFragment extends Fragment {
             // Where username is a child of the userId ds
             String username = ds.child("username").getValue(String.class);
             String profileImageURL = ds.child("profileURL").getValue(String.class);
+
             list.add(new UserPreview(username, profileImageURL));
         }
 
+        // Set custom adapter
         PreviewListAdapter adapter = new PreviewListAdapter(getActivity(), R.layout.profile_preview_row, list);
         listView.setAdapter(adapter);
 

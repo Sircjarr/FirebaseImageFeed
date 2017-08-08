@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.cliff.firebaseimagefeed.Model.CurrentUser;
 import com.example.cliff.firebaseimagefeed.Model.UserImage;
 import com.example.cliff.firebaseimagefeed.Util.UserListAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -28,6 +29,9 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
+
+// Display the current user's images in a list
+// Clicking on these images will delete them from Firebase Storage and Database
 
 public class CurrentUserFragment extends Fragment {
 
@@ -47,34 +51,41 @@ public class CurrentUserFragment extends Fragment {
         lvUserImages = (ListView) view.findViewById(R.id.lvUserImages);
         tvNoImages = (TextView) view.findViewById(R.id.tvNoImages);
 
-        // Read all the current user's images and display them in a list.
         cufDatabase = FirebaseDatabase.getInstance();
         cufDatabaseReference = cufDatabase.getReference("user_images");
+
         cufDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot ds) {
-                final String username = NavigationActivity.currentUserInfo.getUsername();
 
+                // Read in ArrayList from the Database
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
-                final List<String> userImagesURL = ds.child(username).getValue(t);
+                final List<String> userImagesURL = ds.child(CurrentUser.USERNAME).getValue(t);
 
                 if (userImagesURL == null) {
+                    // user has not uploaded images
                     tvNoImages.setVisibility(View.VISIBLE);
                 }
                 else {
+                    // Create the List<UserImage
                     final List<UserImage> userImages = new ArrayList<>();
                     for (int i = 0; i < userImagesURL.size(); i++) {
                         userImages.add(new UserImage(userImagesURL.get(i)));
                     }
+
+                    // Set the custom adapter
                     final UserListAdapter adapter = new UserListAdapter(getActivity(), R.layout.user_image_row, userImages);
                     lvUserImages.setAdapter(adapter);
 
                     lvUserImages.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            deleteFromStorage(userImagesURL.get(position));
-                            deleteFromDatabase(username, position);
 
+                            // Update Storage and the Database
+                            deleteFromStorage(userImagesURL.get(position));
+                            deleteFromDatabase(position);
+
+                            // Update the ArrayLists
                             userImagesURL.remove(position);
                             userImages.remove(position);
                             adapter.notifyDataSetChanged();
@@ -97,8 +108,11 @@ public class CurrentUserFragment extends Fragment {
 
     public void deleteFromStorage(String URLToDelete) {
 
+        // Get FirebaseStorage instance and Reference
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         StorageReference imageRef = firebaseStorage.getReferenceFromUrl(URLToDelete);
+
+        // Delete the item defined in imageRef
         imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -114,21 +128,26 @@ public class CurrentUserFragment extends Fragment {
         });
     }
 
-    public void deleteFromDatabase(String username, int position) {
-        final String resultUsername = username;
+    public void deleteFromDatabase(int position) {
         final int resultPosition = position;
+
         cufDatabase = FirebaseDatabase.getInstance();
         cufDatabaseReference = cufDatabase.getReference();
+
         cufDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                // Get the ArrayList of images
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {
                 };
-                List<String> userImages = dataSnapshot.child("user_images").child(resultUsername).getValue(t);
+                List<String> userImages = dataSnapshot.child("user_images").child(CurrentUser.USERNAME).getValue(t);
 
+                // update the ArrayList
                 userImages.remove(resultPosition);
-                cufDatabaseReference.child("user_images").child(resultUsername).setValue(userImages);
+
+                // Overwrite the ArrayList with the updated one
+                cufDatabaseReference.child("user_images").child(CurrentUser.USERNAME).setValue(userImages);
             }
             @Override
             public void onCancelled(DatabaseError error) {

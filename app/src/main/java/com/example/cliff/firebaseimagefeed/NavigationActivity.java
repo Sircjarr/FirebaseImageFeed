@@ -8,11 +8,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.cliff.firebaseimagefeed.Model.CurrentUser;
 import com.example.cliff.firebaseimagefeed.Model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,15 +22,21 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+/*
+ *This Activity contains three fragments
+ *All fragments must be part of an Activity
+ *These fragments will have access to all of the data within this Activity
+ *Fragments are useful for things like navigation bars, which remain on-screen when swapping them
+ *These fragments will have access to the AuthListener coded here
+ */
+
 public class NavigationActivity extends AppCompatActivity {
 
     private static final String TAG = "NavigationActivity";
 
-    public static User currentUserInfo;
-
     public FirebaseAuth auth;
     private FirebaseAuth.AuthStateListener authListener;
-    public FirebaseUser user;
+    public FirebaseUser fbUser;
 
     FirebaseDatabase navDatabase;
     DatabaseReference navReference;
@@ -44,16 +50,14 @@ public class NavigationActivity extends AppCompatActivity {
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+                fbUser = firebaseAuth.getCurrentUser();
+                if (fbUser != null) {
                     // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    makeToast("Signed in 2");
                 } else {
                     // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
                     startActivity(new Intent(NavigationActivity.this, MainActivity.class));
-                    makeToast("Signed out 2");
+                    makeToast("Signed out");
+                    finish();
                 }
             }
         };
@@ -74,39 +78,29 @@ public class NavigationActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
         myToolbar.setTitle("Users");
-
-        /*----------------- Testing --------------
-        // Observe the structure of these objects in the database
-        // Test 1: ArrayList<CustomObject>
-        FirebaseDatabase testDatabase = FirebaseDatabase.getInstance();
-        ArrayList<User> testArrayList = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            testArrayList.add(new User("boga", "noga"));
-        }
-        DatabaseReference testDatabaseReference = testDatabase.getReference("test");
-        testDatabaseReference.setValue(testArrayList);
-
-        // Test 2: ArrayList<String>
-        ArrayList<String> testTwoArrayList = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            testTwoArrayList.add("boga");
-        }
-        DatabaseReference testTwoDatabaseReference = testDatabase.getReference("testTwo");
-        testTwoDatabaseReference.setValue(testTwoArrayList);
-        // ----------------------------------------*/
     }
 
     private void initCurrentUserInfo() {
-        FirebaseUser fbUser = auth.getCurrentUser();
+
+        // Get the current user's userID
+        fbUser = auth.getCurrentUser();
         final String userID = fbUser.getUid();
 
+        // Read in an object from the database
         navDatabase = FirebaseDatabase.getInstance();
         navReference = navDatabase.getReference("users");
+
         navReference.addValueEventListener(new ValueEventListener() {
+            // This method is called once with the initial value and again
+            // whenever data at this location is updated.
             @Override
             public void onDataChange(DataSnapshot ds) {
-                currentUserInfo = ds.child(userID).getValue(User.class);
-                Log.d(TAG, "onDataChange: currentUserInfo is set");
+                User currentUserInfo = ds.child(userID).getValue(User.class);
+
+                CurrentUser.ID = currentUserInfo.getUserID();
+                CurrentUser.USERNAME = currentUserInfo.getUsername();
+                CurrentUser.EMAIL = currentUserInfo.getEmail();
+                CurrentUser.PROFILE_URL = currentUserInfo.getProfileURL();
             }
 
             @Override
@@ -133,10 +127,11 @@ public class NavigationActivity extends AppCompatActivity {
                     break;
                 case R.id.current_user:
                     fragment = new CurrentUserFragment();
-                    setTitle(currentUserInfo.getUsername());
+                    setTitle(CurrentUser.USERNAME);
                     break;
             }
 
+            // Swap fragment out of the FrameLayout located in activity_navigation.xml
             if (fragment != null) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 fragmentManager.beginTransaction()
@@ -148,26 +143,12 @@ public class NavigationActivity extends AppCompatActivity {
 
     };
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        auth.addAuthStateListener(authListener);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (authListener != null) {
-            auth.removeAuthStateListener(authListener);
-        }
-    }
-
+    // Logout menu in appActionBar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -183,6 +164,20 @@ public class NavigationActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        auth.addAuthStateListener(authListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (authListener != null) {
+            auth.removeAuthStateListener(authListener);
+        }
     }
 
     private void makeToast(String message){

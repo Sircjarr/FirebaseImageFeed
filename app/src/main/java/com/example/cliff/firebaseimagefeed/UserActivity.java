@@ -21,6 +21,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+// Shows a list of the chosen user's images
+
 public class UserActivity extends AppCompatActivity{
 
     ListView lvUserImages;
@@ -28,6 +30,8 @@ public class UserActivity extends AppCompatActivity{
 
     FirebaseDatabase uaDatabase;
     DatabaseReference uaDatabaseReference;
+
+    String username;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,25 +42,40 @@ public class UserActivity extends AppCompatActivity{
         tvNoImages = (TextView) findViewById(R.id.tvNoImages);
 
         Intent intent = getIntent();
-        final String username = intent.getStringExtra("username");
+        username = intent.getStringExtra("username");
 
+        createListView();
+
+        // Setup toolbar
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
+        myToolbar.setTitle(username);
+    }
+
+    public void createListView() {
         uaDatabase = FirebaseDatabase.getInstance();
         uaDatabaseReference = uaDatabase.getReference("user_images");
+
         uaDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot ds) {
 
+                // Get ArrayList of user's imageURLS
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
                 List<String> userImagesURL = ds.child(username).getValue(t);
 
                 if (userImagesURL == null) {
+                    // User has no images
                     tvNoImages.setVisibility(View.VISIBLE);
                 }
                 else {
+                    // Create the List<UserImage>
                     List<UserImage> userImages = new ArrayList<>();
                     for (int i = 0; i < userImagesURL.size(); i++) {
                         userImages.add(new UserImage(userImagesURL.get(i)));
                     }
+
+                    // Set the custom adapter
                     UserListAdapter adapter = new UserListAdapter(UserActivity.this, R.layout.user_image_row, userImages);
                     lvUserImages.setAdapter(adapter);
                 }
@@ -66,9 +85,5 @@ public class UserActivity extends AppCompatActivity{
             public void onCancelled(DatabaseError error) {
             }
         });
-
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(myToolbar);
-        setTitle(username);
     }
 }

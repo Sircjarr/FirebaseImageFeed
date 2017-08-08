@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.example.cliff.firebaseimagefeed.Model.CurrentUser;
 import com.example.cliff.firebaseimagefeed.Model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -46,20 +48,19 @@ public class UploadFragment extends Fragment {
 
     private ProgressDialog mProgressDialog;
 
-    Button btnUploadFromGallery;
-    ImageView ivImage;
-    Button btnPost;
-    Button btnUpdateProfilePicture;
+    private Button btnUploadFromGallery;
+    private ImageView ivImage;
+    private Button btnPost;
+    private Button btnUpdateProfilePicture;
 
-    byte[] byteArray;
+    // For transferring bitmaps
+    private byte[] byteArray;
 
+    // Request code
     public static final int GET_FROM_GALLERY = 3;
 
     private StorageReference storageRef;
     private FirebaseDatabase database;
-
-    private String userID;
-    private String username;
 
     @Nullable
     @Override
@@ -71,11 +72,10 @@ public class UploadFragment extends Fragment {
         btnPost = (Button) view.findViewById(R.id.btnPost);
         btnUpdateProfilePicture = (Button) view.findViewById(R.id.btnUpdateProfilePicture);
 
-        userID = NavigationActivity.currentUserInfo.getUserID();
-        username = NavigationActivity.currentUserInfo.getUsername();
-
+        // Create a progress dialog for uploading images
         mProgressDialog = new ProgressDialog(getActivity());
 
+        // Code to retrieve an image from the phone's gallery
         btnUploadFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,19 +93,22 @@ public class UploadFragment extends Fragment {
                     mProgressDialog.setMessage("Uploading image...");
                     mProgressDialog.show();
 
-                    Log.d(TAG, "onClick: userID " + userID);
-
-                    storageRef = FirebaseStorage.getInstance().getReference();
+                    // Using FirebaseStorage is similar to using FirebaseDatabase
                     long name = System.currentTimeMillis();
-                    StorageReference storageReference = storageRef.child("images/users/" + userID + "/" + name + ".jpg");
+                    storageRef = FirebaseStorage.getInstance().getReference();
+                    StorageReference storageReference = storageRef.child("images/users/" + CurrentUser.ID + "/" + name + ".jpg");
+
                     storageReference.putBytes(byteArray).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
                             // Get a URL to the uploaded content
                             @SuppressWarnings("VisibleForTests") Uri downloadUrl = taskSnapshot.getDownloadUrl();
                             writeURLReferenceToDatabase(downloadUrl.toString());
+
                             makeToast("Upload Success");
                             mProgressDialog.dismiss();
+
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -129,17 +132,20 @@ public class UploadFragment extends Fragment {
                     mProgressDialog.setMessage("Uploading image...");
                     mProgressDialog.show();
 
-                    // Save in storage
                     storageRef = FirebaseStorage.getInstance().getReference();
-                    StorageReference storageReference = storageRef.child("profile_images/users/" + userID + "/profile.jpg");
+                    StorageReference storageReference = storageRef.child("profile_images/users/" + CurrentUser.ID + "/profile.jpg");
+
                     storageReference.putBytes(byteArray).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
                             // Get a URL to the uploaded content
                             @SuppressWarnings("VisibleForTests") Uri downloadUrl = taskSnapshot.getDownloadUrl();
                             writeProfileURLReferenceToDatabase(downloadUrl.toString());
+
                             makeToast("Upload Success");
                             mProgressDialog.dismiss();
+
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -158,6 +164,7 @@ public class UploadFragment extends Fragment {
         return view;
     }
 
+    // Run when a user selects a photo in their phone's gallery
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -168,8 +175,11 @@ public class UploadFragment extends Fragment {
             Bitmap bitmap = null;
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImage);
+
                 mProgressDialog.setMessage("Getting image...");
                 mProgressDialog.show();
+
+                // Load in a Bitmap with Glide
                 Glide.with(this)
                         .load(bitmapToByte(bitmap))
                         .asBitmap()
@@ -189,6 +199,7 @@ public class UploadFragment extends Fragment {
         }
     }
 
+    // Convert a Bitmap into a byte[] so Glide can load it in the view
     private byte[] bitmapToByte(Bitmap bitmap){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
@@ -196,23 +207,31 @@ public class UploadFragment extends Fragment {
         return byteArray;
     }
 
+    // ArrayLists with FirebaseDatabase
     public void writeURLReferenceToDatabase(String url) {
-        database = FirebaseDatabase.getInstance();
 
         final String resultURL = url;
+
+        database = FirebaseDatabase.getInstance();
         final DatabaseReference databaseReference = database.getReference("user_images");
+
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                // Get an ArrayList from the database with GenericTypeIndicator<>
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
-                List<String> userImages = dataSnapshot.child(username).getValue(t);
+                List<String> userImages = dataSnapshot.child(CurrentUser.USERNAME).getValue(t);
 
                 if (userImages == null) {
+                    // User's first uploaded image
                     userImages = new ArrayList<String>();
                 }
+
                 userImages.add(resultURL);
-                databaseReference.child(username).setValue(userImages);
+
+                // Overwrite ArrayList with the new one
+                databaseReference.child(CurrentUser.USERNAME).setValue(userImages);
             }
 
             @Override
@@ -224,17 +243,23 @@ public class UploadFragment extends Fragment {
     }
 
     public void writeProfileURLReferenceToDatabase(String url) {
-        database = FirebaseDatabase.getInstance();
-
         final String resultURL = url;
+
+        database = FirebaseDatabase.getInstance();
         final DatabaseReference databaseReference = database.getReference("users");
+
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot ds) {
-                // Get the current User's class and update the profileURL field
-                User user = ds.child(userID).getValue(User.class);
+
+                // Read in the current user's class
+                User user = ds.child(CurrentUser.ID).getValue(User.class);
+
+                // Update the profileURL
                 user.setProfileURL(resultURL);
-                databaseReference.child(userID).setValue(user);
+
+                // Overwrite the class with the updated one
+                databaseReference.child(CurrentUser.ID).setValue(user);
             }
 
             @Override

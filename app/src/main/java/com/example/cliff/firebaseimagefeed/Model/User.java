@@ -1,5 +1,7 @@
 package com.example.cliff.firebaseimagefeed.Model;
 
+// Class to be stored and retrieved from the FirebaseDatabase
+
 public class User {
 
     private String userID;

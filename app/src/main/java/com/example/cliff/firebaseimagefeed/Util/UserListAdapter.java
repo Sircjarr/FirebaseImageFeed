@@ -48,7 +48,7 @@ public class UserListAdapter extends ArrayAdapter<UserImage> {
         // Get person's information
         String imgURL = getItem(position).getUserImageURL();
 
-        // Best design pattern for listView
+        // Best design pattern for ListView
         if (convertView == null) {
 
             // Inflate the view

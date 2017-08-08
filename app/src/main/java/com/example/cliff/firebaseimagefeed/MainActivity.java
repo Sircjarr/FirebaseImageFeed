@@ -20,6 +20,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+// This class handles both registering and signing in with Firebase Authentication
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -28,8 +30,10 @@ public class MainActivity extends AppCompatActivity {
     TextView tvSignInOrSignUp;
     Button btnSignInOrSignUp;
 
+    // Firebase authentication
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    // Firebase Database
     public FirebaseDatabase mDatabase;
     public DatabaseReference mDatabaseReference;
 
@@ -50,37 +54,32 @@ public class MainActivity extends AppCompatActivity {
         btnSignInOrSignUp = (Button) findViewById(R.id.btnSignInOrSignUp);
         tvSignInOrSignUp = (TextView) findViewById(R.id.tvSignUpOrSignIn);
 
+        // Begin listening for registered users
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                // FirebaseUser contains information about the authenticated user
                 FirebaseUser mUser = firebaseAuth.getCurrentUser();
                 if (mUser != null) {
                     // User is signed in
                     if (!newUser) {
-                        Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
-                        intent.putExtra("username", username);
-                        startActivity(intent);
+                        startActivity(new Intent(MainActivity.this, NavigationActivity.class));
                     }
                     else {
                         addUserToDatabase();
-                        Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
-                        intent.putExtra("username", username);
-                        startActivity(intent);
+                        startActivity(new Intent(MainActivity.this, NavigationActivity.class));
                     }
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
                     makeToast("Signed in");
-                    // This method will finish the current activity, making sure it will not stack.
-                    finish();
+                    finish(); // Finish the current activity so that it will not stack.
                 } else {
                     // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
                     makeToast("Signed out");
                 }
-                // ...
             }
         };
 
+        // Clickable TextView to handle logging in or signing up
         tvSignInOrSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,22 +100,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
-    }
-
     public void btnSignInOrSignUp(View view) {
         if (signInMode) {
+            // Sign user in
             email = etEmail.getText().toString();
             String password = etPassword.getText().toString();
 
@@ -128,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
+            // Register new user
             username = etUsername.getText().toString();
             email = etEmail.getText().toString();
             String password = etPassword.getText().toString();
@@ -156,14 +143,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // After user is registered with Firebase Authentication,
+    // Details about the user will be written to the FirebaseDatabase
     public void addUserToDatabase() {
         mDatabase = FirebaseDatabase.getInstance();
         mDatabaseReference = mDatabase.getReference("users");
+
         FirebaseUser fbUser = mAuth.getCurrentUser();
         String userID = fbUser.getUid();
         User user = new User(userID, email, username);
 
+        // Database > users > userID > User.Class
         mDatabaseReference.child(userID).setValue(user);
+    }
+
+    // Needed for every class with FirebaseAuth.AuthStateListener
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+    }
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
     }
 
     private void makeToast(String message){

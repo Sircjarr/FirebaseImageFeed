@@ -51,7 +51,7 @@ public class PreviewListAdapter extends ArrayAdapter<UserPreview> {
         String username = getItem(position).getUsername();
         String imgURL = getItem(position).getProfileImageURL();
 
-        // Best design pattern for listView
+        // Best design pattern for ListView
         if (convertView == null) {
 
             // Inflate the view
@@ -73,6 +73,7 @@ public class PreviewListAdapter extends ArrayAdapter<UserPreview> {
         // Retrieve the placeholder image
         int placeholder = mContext.getResources().getIdentifier("@drawable/default_image", null, mContext.getPackageName());
 
+        // Set views
         holder.tvUsername.setText(username);
         // Use Glide to load the image
         if (imgURL.equals("none")) {

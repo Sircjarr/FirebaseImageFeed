@@ -1,5 +1,7 @@
 package com.example.cliff.firebaseimagefeed.Model;
 
+// Class used with an adapter for a user's name and profile picture in a ListView
+
 public class UserPreview {
 
     private String username;
