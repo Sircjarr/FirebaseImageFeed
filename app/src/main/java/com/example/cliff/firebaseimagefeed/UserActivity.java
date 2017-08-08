@@ -49,7 +49,7 @@ public class UserActivity extends AppCompatActivity{
         // Setup toolbar
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
-        myToolbar.setTitle(username);
+        setTitle(username);
     }
 
     public void createListView() {
