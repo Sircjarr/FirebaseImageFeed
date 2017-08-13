@@ -15,5 +15,6 @@ A social image-sharing app using Google Firebase cloud storage. This app allows 
   <li>Packages for organizing Java classes</li>
   <li>ProgressDialogs</li>
   <li>ProgressBars</li>
+  <li>Buttons with icons</li>
   <li>Overflow menu for signing out</li>
 </ul>
