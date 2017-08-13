@@ -97,10 +97,10 @@ public class NavigationActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot ds) {
                 User currentUserInfo = ds.child(userID).getValue(User.class);
 
-                CurrentUser.ID = currentUserInfo.getUserID();
-                CurrentUser.USERNAME = currentUserInfo.getUsername();
-                CurrentUser.EMAIL = currentUserInfo.getEmail();
-                CurrentUser.PROFILE_URL = currentUserInfo.getProfileURL();
+                CurrentUser.Id = currentUserInfo.getUserID();
+                CurrentUser.username = currentUserInfo.getUsername();
+                CurrentUser.email = currentUserInfo.getEmail();
+                CurrentUser.profile_url = currentUserInfo.getProfileURL();
             }
 
             @Override
@@ -127,7 +127,7 @@ public class NavigationActivity extends AppCompatActivity {
                     break;
                 case R.id.current_user:
                     fragment = new CurrentUserFragment();
-                    setTitle(CurrentUser.USERNAME);
+                    setTitle(CurrentUser.username);
                     break;
             }
 

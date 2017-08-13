@@ -9,6 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/upload_from_gallery"
+        android:drawableLeft="@drawable/ic_access_gallery"
+        android:drawableStart="@drawable/ic_access_gallery"
         />
 
     <ImageView
@@ -23,12 +25,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/post"
+        android:drawableLeft="@drawable/ic_upload_image"
+        android:drawableStart="@drawable/ic_upload_image"
         />
 
     <Button
         android:id="@+id/btnUpdateProfilePicture"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/update_profile_picture"/>
+        android:text="@string/update_profile_picture"
+        android:drawableLeft="@drawable/ic_update_profile_picture"
+        android:drawableStart="@drawable/ic_update_profile_picture"/>
 
 </LinearLayout>

@@ -96,7 +96,7 @@ public class UploadFragment extends Fragment {
                     // Using FirebaseStorage is similar to using FirebaseDatabase
                     long name = System.currentTimeMillis();
                     storageRef = FirebaseStorage.getInstance().getReference();
-                    StorageReference storageReference = storageRef.child("images/users/" + CurrentUser.ID + "/" + name + ".jpg");
+                    StorageReference storageReference = storageRef.child("images/users/" + CurrentUser.Id + "/" + name + ".jpg");
 
                     storageReference.putBytes(byteArray).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -133,7 +133,7 @@ public class UploadFragment extends Fragment {
                     mProgressDialog.show();
 
                     storageRef = FirebaseStorage.getInstance().getReference();
-                    StorageReference storageReference = storageRef.child("profile_images/users/" + CurrentUser.ID + "/profile.jpg");
+                    StorageReference storageReference = storageRef.child("profile_images/users/" + CurrentUser.Id + "/profile.jpg");
 
                     storageReference.putBytes(byteArray).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -221,7 +221,7 @@ public class UploadFragment extends Fragment {
 
                 // Get an ArrayList from the database with GenericTypeIndicator<>
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
-                List<String> userImages = dataSnapshot.child(CurrentUser.USERNAME).getValue(t);
+                List<String> userImages = dataSnapshot.child(CurrentUser.username).getValue(t);
 
                 if (userImages == null) {
                     // User's first uploaded image
@@ -231,7 +231,7 @@ public class UploadFragment extends Fragment {
                 userImages.add(resultURL);
 
                 // Overwrite ArrayList with the new one
-                databaseReference.child(CurrentUser.USERNAME).setValue(userImages);
+                databaseReference.child(CurrentUser.username).setValue(userImages);
             }
 
             @Override
@@ -253,13 +253,13 @@ public class UploadFragment extends Fragment {
             public void onDataChange(DataSnapshot ds) {
 
                 // Read in the current user's class
-                User user = ds.child(CurrentUser.ID).getValue(User.class);
+                User user = ds.child(CurrentUser.Id).getValue(User.class);
 
                 // Update the profileURL
                 user.setProfileURL(resultURL);
 
                 // Overwrite the class with the updated one
-                databaseReference.child(CurrentUser.ID).setValue(user);
+                databaseReference.child(CurrentUser.Id).setValue(user);
             }
 
             @Override

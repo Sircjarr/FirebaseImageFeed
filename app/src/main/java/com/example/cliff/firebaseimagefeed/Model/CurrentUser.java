@@ -3,8 +3,8 @@ package com.example.cliff.firebaseimagefeed.Model;
 // Quick access to details about the current user
 
 public class CurrentUser {
-    public static String ID;
-    public static String USERNAME;
-    public static String EMAIL;
-    public static String PROFILE_URL;
+    public static String Id;
+    public static String username;
+    public static String email;
+    public static String profile_url;
 }

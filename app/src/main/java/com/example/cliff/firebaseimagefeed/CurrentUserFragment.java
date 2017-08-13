@@ -60,7 +60,7 @@ public class CurrentUserFragment extends Fragment {
 
                 // Read in ArrayList from the Database
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
-                final List<String> userImagesURL = ds.child(CurrentUser.USERNAME).getValue(t);
+                final List<String> userImagesURL = ds.child(CurrentUser.username).getValue(t);
 
                 if (userImagesURL == null) {
                     // user has not uploaded images
@@ -141,13 +141,13 @@ public class CurrentUserFragment extends Fragment {
                 // Get the ArrayList of images
                 GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {
                 };
-                List<String> userImages = dataSnapshot.child("user_images").child(CurrentUser.USERNAME).getValue(t);
+                List<String> userImages = dataSnapshot.child("user_images").child(CurrentUser.username).getValue(t);
 
                 // update the ArrayList
                 userImages.remove(resultPosition);
 
                 // Overwrite the ArrayList with the updated one
-                cufDatabaseReference.child("user_images").child(CurrentUser.USERNAME).setValue(userImages);
+                cufDatabaseReference.child("user_images").child(CurrentUser.username).setValue(userImages);
             }
             @Override
             public void onCancelled(DatabaseError error) {
